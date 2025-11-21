@@ -15,7 +15,7 @@ A complete real-time streaming pipeline using Apache Kafka and Python with Avro 
 ##  Project Structure
 
 ```
-kafka-order-system/
+Assignment_4088/
 │
 ├── schema/
 │   └── order.avsc
