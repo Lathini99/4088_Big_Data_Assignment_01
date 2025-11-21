@@ -1,152 +1,107 @@
-Kafka Real-Time Order Processing System
-Using Python + Apache Kafka + Avro Serialization
+project:
+  title: "Kafka Real-Time Order Processing System"
+  description: |
+    Using Python + Apache Kafka + Avro Serialization.
+    This project implements a complete real-time streaming pipeline using Apache Kafka and Python.
+    It fulfills all assignment requirements:
+      - Avro serialization
+      - Producer + Consumer
+      - Running average calculation
+      - Retry logic
+      - Dead Letter Queue (DLQ)
+      - Live demonstration support
+      - Full Kafka setup commands
+      - Beginner-friendly structure
 
-This project implements a complete real-time streaming pipeline using Apache Kafka and Python.
-It fulfills all assignment requirements:
+project_structure:
+  root: "kafka-order-system/"
+  files:
+    - "README.md"
+    - producer: "producer.py"
+    - consumer: "consumer.py"
+    - dlq_consumer: "dlq_consumer.py"
+    - schema:
+        - "order.avsc"
 
-✔ Avro serialization
-✔ Producer + Consumer
-✔ Running average calculation
-✔ Retry logic
-✔ Dead Letter Queue (DLQ)
-✔ Live demonstration support
-✔ Full Kafka setup commands
-✔ Beginner-friendly structure
+installation:
+  dependencies:
+    - "kafka-python"
+    - "avro-python3"
+  command: "pip install kafka-python avro-python3"
 
-Project Structure
-kafka-order-system/
-│
-├── schema/
-│   └── order.avsc
-│
-├── producer.py
-├── consumer.py
-├── dlq_consumer.py
-│
-└── README.md
+kafka_setup:
+  zookeeper:
+    description: "Start ZooKeeper"
+    command: "C:\\kafka\\bin\\windows\\zookeeper-server-start.bat C:\\kafka\\config\\zookeeper.properties"
+  broker:
+    description: "Start Kafka Broker"
+    command: "C:\\kafka\\bin\\windows\\kafka-server-start.bat C:\\kafka\\config\\server.properties"
 
-1. How to Install Requirements
-Install Kafka-Python and Avro
+topics:
+  - name: "orders"
+    description: "Main topic"
+    create_command: "C:\\kafka\\bin\\windows\\kafka-topics.bat --create --topic orders --bootstrap-server localhost:9092"
+  - name: "orders-dlq"
+    description: "Dead Letter Queue (DLQ)"
+    create_command: "C:\\kafka\\bin\\windows\\kafka-topics.bat --create --topic orders-dlq --bootstrap-server localhost:9092"
+  - verify_command: "C:\\kafka\\bin\\windows\\kafka-topics.bat --list --bootstrap-server localhost:9092"
+  - expected_output:
+      - "orders"
+      - "orders-dlq"
 
-pip install kafka-python avro-python3
+avro_schema:
+  file: "schema/order.avsc"
+  content: |
+    {
+      "type": "record",
+      "name": "OrderRecord",
+      "namespace": "order",
+      "fields": [
+        { "name": "orderId", "type": "string" },
+        { "name": "product", "type": "string" },
+        { "name": "price", "type": "float" }
+      ]
+    }
 
-2. Kafka Setup (Windows)
-Start ZooKeeper
-C:\kafka\bin\windows\zookeeper-server-start.bat C:\kafka\config\zookeeper.properties
+components:
+  producer:
+    file: "producer.py"
+    description:
+      - "Sends random orders"
+      - "Converts messages into Avro format"
+      - "Retries on failure"
+      - "Sends failed messages to DLQ"
+    run_command: "python producer.py"
+  consumer:
+    file: "consumer.py"
+    description:
+      - "Reads messages from orders topic"
+      - "Deserializes Avro"
+      - "Calculates running average price"
+      - "Sends corrupted messages to DLQ"
+    run_command: "python consumer.py"
+  dlq_consumer:
+    file: "dlq_consumer.py"
+    description:
+      - "Reads only failed/bad messages"
+      - "Helps debugging and validating DLQ logic"
+    run_command: "python dlq_consumer.py"
 
-Start Kafka Broker
+run_system:
+  terminals:
+    - terminal_1: "python consumer.py"
+    - terminal_2: "python dlq_consumer.py"
+    - terminal_3: "python producer.py"
+  example_output:
+    producer: "[OK] Sent: {'orderId': '1001', 'product': 'Item2', 'price': 54.12}"
+    consumer:
+      - "Received: {'orderId': '1001', 'product': 'Item2', 'price': 54.12}"
+      - "Running Average Price = 54.12"
+    dlq_consumer: "DLQ Message: { ... }"
 
-Open a new terminal:
-
-C:\kafka\bin\windows\kafka-server-start.bat C:\kafka\config\server.properties
-
-3. Create Topics
-
-
-Main Topic
-C:\kafka\bin\windows\kafka-topics.bat --create --topic orders --bootstrap-server localhost:9092
-
-Dead Letter Queue (DLQ)
-C:\kafka\bin\windows\kafka-topics.bat --create --topic orders-dlq --bootstrap-server localhost:9092
-
-Verify Topics
-C:\kafka\bin\windows\kafka-topics.bat --list --bootstrap-server localhost:9092
-
-
-Expected output:
-
-orders
-orders-dlq
-
-4. Avro Schema (order.avsc)
-
-Inside schema/order.avsc:
-
-{
-  "type": "record",
-  "name": "OrderRecord",
-  "namespace": "order",
-  "fields": [
-    { "name": "orderId", "type": "string" },
-    { "name": "product", "type": "string" },
-    { "name": "price", "type": "float" }
-  ]
-}
-
-5. Producer — producer.py
-
-✔ Sends random orders
-✔ Converts messages into Avro format
-✔ Retries on failure
-✔ Sends failed messages to DLQ
-
-Run with:
-
-python producer.py
-
-6. Consumer — consumer.py
-
-✔ Reads messages from orders topic
-✔ Deserializes Avro
-✔ Calculates running average price
-✔ Sends corrupted messages to DLQ
-
-Run with:
-
-python consumer.py
-
-7. DLQ Consumer — dlq_consumer.py
-
-✔ Reads only failed/bad messages
-✔ Helps debugging and validating DLQ logic
-
-Run with:
-
-python dlq_consumer.py
-
-8. How to Run the Entire System
-
-Open three terminals in VS Code or CMD:
-
-Terminal 1 — Consumer
-python consumer.py
-
-Terminal 2 — DLQ Consumer
-python dlq_consumer.py
-
-Terminal 3 — Producer
-python producer.py
-
-
-You will see:
-
-Producer:
-[OK] Sent: {'orderId': '1001', 'product': 'Item2', 'price': 54.12}
-
-Consumer:
-Received: {'orderId': '1001', 'product': 'Item2', 'price': 54.12}
-Running Average Price = 54.12
-
-DLQ Consumer (only when errors occur):
-DLQ Message: { ... }
-
-9. Features Implemented
-✔ Avro Serialization
-
-Ensures structured message format.
-
-✔ Retry Logic
-
-Retries 3 times before moving to DLQ.
-
-✔ Dead Letter Queue
-
-Handles corrupted or failed messages.
-
-✔ Real-Time Aggregation
-
-Consumer calculates up-to-date running average.
-
-✔ Fault Tolerance
-
-System keeps running even with failures.
+features_implemented:
+  - "Avro Serialization: Ensures structured message format"
+  - "Retry Logic: Retries 3 times before moving to DLQ"
+  - "Dead Letter Queue: Handles corrupted or failed messages"
+  - "Real-Time Aggregation: Consumer calculates up-to-date running average"
+  - "Fault Tolerance: System keeps running even with failures"
